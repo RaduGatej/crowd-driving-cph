@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-WIFI_SCANS_FILE_PATH = '/big_data/data/wifi_scans_by_user/user_'
-LOCATIONS_FILE_PATH = '/big_data/data/location_scans_by_user/user_'
+WIFI_SCANS_FILE_PATH = '/home/radugatej/wifi_scans_by_user/corrected_user_'
+LOCATIONS_FILE_PATH = '/home/radugatej/location_scans_by_user/corrected_user_'
 
 def get_locations_from_file_for_user(user_id):
 	locations_file = open(LOCATIONS_FILE_PATH + str(user_id), 'r').read().split("\n")

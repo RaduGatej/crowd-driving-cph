@@ -166,23 +166,23 @@ def write_observations_to_mongo(bssid_tuple):
 
 		bssid_collection.insert(bssid_data)
 
+if __name__ == "__main__":
+	print "Start: " + time.strftime("%H:%M:%S", time.localtime())
 
-print "Start: " + time.strftime("%H:%M:%S", time.localtime())
+	user_ids = range(1, 132, 1)
+	# user_ids.remove(108)
+	# user_ids.remove(20)
+	# user_ids.remove(44)
+	# user_ids.remove(34)
+	# big_data_user_ids = [34]
 
-user_ids = range(1, 132, 1)
-user_ids.remove(108)
-user_ids.remove(20)
-user_ids.remove(44)
-user_ids.remove(34)
-big_data_user_ids = [34]
+	print "Computing possible location for each BSSID: " + time.strftime("%H:%M:%S", time.localtime())
+	p = Pool(processes=20)
+	p.map(map_locations_to_access_points_for_the_user, user_ids)
 
-print "Computing possible location for each BSSID: " + time.strftime("%H:%M:%S", time.localtime())
-#p = Pool(processes=7)
-#p.map(map_locations_to_access_points_for_the_user, user_ids)
-
-print "Processing user with big data: " + time.strftime("%H:%M:%S", time.localtime())
-for user_id in big_data_user_ids:
-	big_data_results = map_locations_to_access_points_multiprocessed_for_the_user(user_id)
+	# print "Processing user with big data: " + time.strftime("%H:%M:%S", time.localtime())
+	# for user_id in big_data_user_ids:
+	# 	big_data_results = map_locations_to_access_points_multiprocessed_for_the_user(user_id)
 
 
-print "End: " + time.strftime("%H:%M:%S", time.localtime())
+	print "End: " + time.strftime("%H:%M:%S", time.localtime())

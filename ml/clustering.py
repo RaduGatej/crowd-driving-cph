@@ -1,28 +1,28 @@
+from multiprocessing import Pool
 from haversine import haversine
-from ml import gaussian
+from pymongo import MongoClient
+import gaussian
 
+client = MongoClient(max_pool_size=30)
 
-def prepare_for_gaussian(location_list):
+def get_clusters(bssid):
+	observations = client["radudb"]["observations"].find({"BSSID": bssid})
+	if observations.count() < 5:
+		return
 	locations = []
-	for location in location_list:
-		locations.append([location[0], location[1]])
-	return locations
+	for observation in observations:
+		locations.append([observation["latitude"], observation["longitude"]])
 
-def get_clusters(bssid_tuple):
-	bssid_dict = {}
-	bssid = bssid_tuple[0]
-	possible_locations = bssid_tuple[1]
-	if len(possible_locations) < 5:
-		return bssid_dict
-
-	locations = prepare_for_gaussian(possible_locations)
 	labels = gaussian.gaussian(locations)
-	for i in range(0, len(labels), 1):
-		locations[i].append(labels[i])
-		locations[i].append(possible_locations[i][3])
-		locations[i].append(possible_locations[i][4])
-	bssid_dict[bssid] = locations
-	return bssid_dict
+	observations.rewind()
+	bssid_file = open("observations/" + str(bssid), "w")
+	observation_lines = ""
+	for i, observation in enumerate(observations):
+		observation['cluster_id'] = int(labels[i])
+		observation.pop('_id')
+		observation_lines += " ".join([str(obs_value) for obs_value in observation.values()]) + "\n"
+	bssid_file.write(observation_lines)
+	bssid_file.close()
 
 def remove_singular_points(locations):
 	items_to_remove = []
@@ -45,3 +45,10 @@ def remove_outliers(bssid_tuple):
 	possible_locations = bssid_tuple[1]
 	bssid_dict[bssid] = remove_singular_points(possible_locations)
 	return bssid_dict
+
+if __name__ == "__main__":
+	bssids =  client["radudb"]["observations"].distinct("BSSID")
+
+	#print bssids
+	p = Pool(processes=20)
+	p.map(get_clusters, bssids)
